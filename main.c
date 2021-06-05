@@ -10,6 +10,16 @@ typedef struct {
     ssize_t input_length;
 } InputBuffer;
 
+typedef enum { STATMENET_INSERT, STATEMENT_SELECT } StatementType;
+
+typedef enum { PREPARE_SUCC, PREPARE_UNRECOGNIZED_STMT } PrepareStatement;
+
+typedef struct {
+    StatementType type;
+} Statement;
+
+typedef enum { META_CMD_SUCC, META_CMD_UNRECOGNIZED } MetaCmdResult;
+
 InputBuffer* new_input_buffer() {
     InputBuffer *buf = (InputBuffer*)malloc(sizeof(InputBuffer));
     buf->buffer = NULL;
@@ -38,17 +48,65 @@ void read_input(InputBuffer *buf) {
     buf->buffer[bytes_read - 1] = '\0'; // Terminate one position earlier
 }
 
+PrepareStatement prepare_stmt(InputBuffer *buf, Statement *stmt) {
+    if (strncmp(buf->buffer, "insert", 6) == 0) {
+        stmt->type = STATMENET_INSERT;
+        return PREPARE_SUCC;
+    }
+    if (strncmp(buf->buffer, "insert", 6) == 0) {
+        stmt->type = STATEMENT_SELECT;
+        return PREPARE_SUCC;
+    }
+
+    return PREPARE_UNRECOGNIZED_STMT;
+}
+
+MetaCmdResult do_meta_command(InputBuffer *buf) {
+    if (strcmp(buf->buffer, ".exit") == 0) {
+        exit(EXIT_SUCCESS);
+    } else {
+        return META_CMD_UNRECOGNIZED;
+    }
+}
+
+void execute_statement(Statement stmt) {
+    switch (stmt.type) {
+        case (STATEMENT_SELECT):
+            //select
+            printf("Selecting... lol");
+            break;
+        case (STATMENET_INSERT):
+            //insert
+            printf("Inserting... lol");
+            break; 
+    }
+}
+
 int main(int argc, char *argv[]) {
     InputBuffer *buf = new_input_buffer();
     while (true) {
         print_prompt();
         read_input(buf);
 
-        if (strcmp(buf->buffer, "\\q") == 0) {
-            close_input_buffer(buf);
-            exit(EXIT_SUCCESS);
-        } else {
-            printf("Voodoo command '%s'.\n", buf->buffer);
+        if (buf->buffer[0] == '.') {
+            switch (do_meta_command(buf)) {
+                case (META_CMD_SUCC):
+                    continue;
+                case (META_CMD_UNRECOGNIZED):
+                    printf("Unrecognized command '%s'\n", buf->buffer);
+                    continue;
+            }
         }
+
+        Statement stmt;
+        switch (prepare_stmt(buf, &stmt)) {
+            case (PREPARE_SUCC):
+                break;
+            case (PREPARE_UNRECOGNIZED_STMT):
+                printf("Unrecognized verb at the start of '%s'\n", buf->buffer);
+        }
+
+        execute_statement(stmt);
+        printf("Executed.\n");
     }
 }
