@@ -53,7 +53,7 @@ PrepareStatement prepare_stmt(InputBuffer *buf, Statement *stmt) {
         stmt->type = STATMENET_INSERT;
         return PREPARE_SUCC;
     }
-    if (strncmp(buf->buffer, "insert", 6) == 0) {
+    if (strncmp(buf->buffer, "select", 6) == 0) {
         stmt->type = STATEMENT_SELECT;
         return PREPARE_SUCC;
     }
