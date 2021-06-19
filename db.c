@@ -105,7 +105,7 @@ InputBuffer* new_input_buffer() {
     return buf;
 }
 
-void print_prompt() { printf("sqlite> "); }
+void print_prompt() { printf("db > "); }
 
 void close_input_buffer(InputBuffer *buf) {
     free(buf->buffer);
@@ -146,6 +146,7 @@ PrepareStatement prepare_stmt(InputBuffer *buf, Statement *stmt) {
 
 MetaCmdResult do_meta_command(InputBuffer *buf, Table *table) {
     if (strcmp(buf->buffer, ".exit") == 0) {
+        close_input_buffer(buf);
         exit(EXIT_SUCCESS);
         free_table(table);
     } else {
